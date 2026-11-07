@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>九上语文期中 · 1 小时冲刺</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --card: #fff; --ink: #222; --sub: #6b6b6b; --line: #e6e1d6;
+    --red: #c0392b; --red-bg: #fdecea; --blue: #2b6cb0; --blue-bg: #e8f1fb;
+    --green: #2f855a; --green-bg: #e6f4ea; --gold: #b7791f; --gold-bg: #fdf5e3;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.7 -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 14px 80px; }
+
+  /* 顶部计时条 */
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(246,244,239,.96);
+    backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  .bar-in { max-width: 720px; margin: 0 auto; padding: 8px 14px; display: flex; align-items: center; gap: 10px; }
+  .clock { font: 600 22px/1 ui-monospace, Menlo, monospace; min-width: 74px; }
+  .now { flex: 1; font-size: 13px; color: var(--sub); line-height: 1.35; }
+  .now b { color: var(--ink); }
+  .btn { border: 0; border-radius: 8px; padding: 8px 12px; font-size: 14px; cursor: pointer;
+    background: var(--ink); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--sub); border: 1px solid var(--line); }
+  .prog { height: 4px; background: var(--line); }
+  .prog i { display: block; height: 100%; width: 0; background: var(--green); transition: width .3s; }
+
+  header.hero { padding: 22px 0 6px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .lead { color: var(--sub); margin: 0; font-size: 14px; }
+
+  /* 时间表 */
+  .plan { display: grid; gap: 6px; margin: 16px 0 6px; }
+  .plan a { display: flex; gap: 10px; align-items: center; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+  .plan a.cur { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+  .plan a.done { opacity: .5; }
+  .plan .t { font: 600 13px ui-monospace, Menlo, monospace; color: var(--sub); min-width: 70px; }
+  .plan .n { flex: 1; font-size: 15px; }
+  .plan .m { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: var(--red-bg); color: var(--red); }
+
+  section.sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 16px 10px; margin: 18px 0; scroll-margin-top: 70px; }
+  section.sec.cur { border-color: var(--ink); }
+  .sec-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .sec-h h2 { font-size: 19px; margin: 0; flex: 1; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--gold-bg); color: var(--gold); }
+  .why { font-size: 13px; color: var(--sub); margin: 4px 0 10px; }
+  h3 { font-size: 16px; margin: 18px 0 8px; padding-left: 8px; border-left: 4px solid var(--ink); }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+
+  .tools { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+  .tools .btn { font-size: 13px; padding: 6px 10px; }
+
+  /* 遮挡式默写：点一下显示 */
+  .c { background: #d9d4c7; color: transparent; border-radius: 4px; padding: 0 2px; cursor: pointer;
+    transition: background .15s, color .15s; -webkit-tap-highlight-color: transparent; }
+  .c.on { background: var(--green-bg); color: var(--green); }
+  .line { padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  .line:last-child { border-bottom: 0; }
+  .src { display: block; font-size: 12px; color: var(--sub); }
+
+  /* 词语卡片 */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .fc { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 14px; line-height: 1.5; }
+  .fc b { display: block; font-size: 15px; }
+  .fc .c { display: inline-block; margin-top: 2px; }
+
+  .key { background: var(--red-bg); color: var(--red); padding: 0 3px; border-radius: 3px; font-weight: 600; }
+  .note { background: var(--blue-bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 10px 0; }
+  .warn { background: var(--red-bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 10px 0; }
+  .warn b, .note b { display: block; margin-bottom: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #faf8f3; font-weight: 600; white-space: nowrap; }
+
+  .typo { display: flex; flex-wrap: wrap; gap: 6px; }
+  .typo span { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 15px; background: #fffdf8; }
+  .typo em { font-style: normal; color: var(--red); font-weight: 700; }
+
+  .done-row { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .done-btn { border: 1px solid var(--green); color: var(--green); background: #fff; border-radius: 8px;
+    padding: 7px 14px; font-size: 14px; cursor: pointer; }
+  .done-btn.ok { background: var(--green); color: #fff; }
+
+  footer { text-align: center; color: var(--sub); font-size: 13px; margin-top: 24px; }
+  footer a { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="clock" id="clock">60:00</div>
+    <div class="now" id="now">按「开始」计时，每段到点会提醒你换下一段</div>
+    <button class="btn" id="startBtn">开始</button>
+    <button class="btn ghost" id="resetBtn">重置</button>
+  </div>
+  <div class="prog"><i id="progBar"></i></div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <h1>九上语文期中 · 1 小时冲刺</h1>
+    <p class="lead">只抓提纲里最容易拿分、最容易丢分的部分。灰色块先自己说出来，再点一下核对。</p>
+  </header>
+
+  <nav class="plan" id="plan">
+    <a href="#s1" data-i="0"><span class="t">00–20′</span><span class="n">① 默写必背 + 易错字</span><span class="m">硬分</span></a>
+    <a href="#s2" data-i="1"><span class="t">20–35′</span><span class="n">② 三篇文言：实词、通假、翻译、简答</span><span class="m">硬分</span></a>
+    <a href="#s3" data-i="2"><span class="t">35–45′</span><span class="n">③ 诗词鉴赏：手法与典故</span></a>
+    <a href="#s4" data-i="3"><span class="t">45–55′</span><span class="n">④ 议论文：四篇思路 + 论证方法</span></a>
+    <a href="#s5" data-i="4"><span class="t">55–60′</span><span class="n">⑤ 现代诗意象 + 易混常识 + 字音</span></a>
+  </nav>
+
+  <!-- ① 默写 -->
+  <section class="sec" id="s1">
+    <div class="sec-h"><h2>① 默写必背 + 易错字</h2><span class="tag">20 分钟</span></div>
+    <p class="why">提纲原话：“第三单元古诗文默写、实词、翻译是硬分”。默写一分都不该丢，丢分几乎都丢在错别字上。</p>
+    <div class="tools">
+      <button class="btn ghost" data-toggle="s1">全部显示 / 全部遮住</button>
+    </div>
+
+    <h3>必背文言句子</h3>
+    <div class="line">不以物喜，<span class="c">不以己悲</span>。<br>先天下之忧而忧，<span class="c">后天下之乐而乐</span>。<span class="src">《岳阳楼记》</span></div>
+    <div class="line">醉翁之意不在酒，<span class="c">在乎山水之间也</span>。<br>醉能同其乐，<span class="c">醒能述以文者，太守也</span>。<span class="src">《醉翁亭记》</span></div>
+    <div class="line">雾凇沆砀，<span class="c">天与云与山与水，上下一白</span>。<br>莫说相公痴，<span class="c">更有痴似相公者</span>。<span class="src">《湖心亭看雪》</span></div>
+
+    <h3>必背诗词名句</h3>
+    <div class="line">俱往矣，数风流人物，<span class="c">还看今朝</span>。<span class="src">《沁园春·雪》（主旨句）</span></div>
+    <div class="line">为什么我的眼里常含泪水？<span class="c">因为我对这土地爱得深沉……</span><span class="src">《我爱这土地》（情感顶点）</span></div>
+    <div class="line">金樽清酒斗十千，<span class="c">玉盘珍羞直万钱</span>。<br>长风破浪会有时，<span class="c">直挂云帆济沧海</span>。<span class="src">《行路难》（后句为主旨句）</span></div>
+    <div class="line"><span class="c">沉舟侧畔千帆过</span>，病树前头万木春。<span class="src">《酬乐天扬州初逢席上见赠》</span></div>
+    <div class="line">人有悲欢离合，<span class="c">月有阴晴圆缺</span>，此事古难全。<br>但愿人长久，<span class="c">千里共婵娟</span>。<span class="src">《水调歌头》</span></div>
+    <div class="line">露从今夜白，<span class="c">月是故乡明</span>。<span class="src">《月夜忆舍弟》</span></div>
+    <div class="line">秋草独寻人去后，<span class="c">寒林空见日斜时</span>。<span class="src">《长沙过贾谊宅》</span></div>
+    <div class="line">一封朝奏九重天，<span class="c">夕贬潮州路八千</span>。<br>云横秦岭家何在？<span class="c">雪拥蓝关马不前</span>。<span class="src">《左迁至蓝关示侄孙湘》</span></div>
+    <div class="line">鸡声茅店月，<span class="c">人迹板桥霜</span>。<span class="src">《商山早行》</span></div>
+
+    <h3>默写高频错字（红字是最容易写错的字）</h3>
+    <div class="typo">
+      <span><em>婵</em>娟</span><span>琼楼玉宇</span><span>金<em>樽</em></span><span>珍<em>羞</em></span><span><em>直</em>万钱</span>
+      <span><em>箸</em></span><span>侧<em>畔</em></span><span><em>戍</em>鼓</span><span><em>雁</em>声</span><span><em>瘴</em>江</span>
+      <span><em>凫</em>雁</span><span>沆<em>砀</em></span><span><em>毳</em>衣</span><span>宠辱<em>偕</em>忘</span><span>心<em>旷</em>神怡</span>
+      <span><em>觥</em>筹交错</span><span><em>伛偻</em>提<em>携</em></span><span><em>颓</em>然</span><span>阴<em>翳</em></span>
+      <span><em>谪</em>守</span><span><em>属</em>予作文</span><span>林<em>霏</em></span><span>岩穴<em>暝</em></span>
+    </div>
+    <div class="warn"><b>最常见的 3 个坑</b>
+      “珍羞”“直万钱”是通假字，默写要照原文写<b style="display:inline">羞、直</b>，不能写成“馐、值”；
+      “宠辱<b style="display:inline">偕</b>忘”不是“皆”；“<b style="display:inline">婵</b>娟”是女字旁。写完回头逐字核字形。
+    </div>
+    <div class="done-row"><button class="done-btn" data-done="0">这一段我背完了 ✓</button></div>
+  </section>
+
+  <!-- ② 文言 -->
+  <section class="sec" id="s2">
+    <div class="sec-h"><h2>② 三篇文言：实词、通假、翻译、简答</h2><span class="tag">15 分钟</span></div>
+    <p class="why">先看词语自己说意思，再点开核对。只挑提纲列出的重点词。</p>
+    <div class="tools"><button class="btn ghost" data-toggle="s2">全部显示 / 全部遮住</button></div>
+
+    <h3>通假字（4 个，必考）</h3>
+    <table>
+      <tr><th>原句</th><th>通假</th></tr>
+      <tr><td>百废<span class="key">具</span>兴（岳阳楼记）</td><td><span class="c">“具”同“俱”，全、都</span></td></tr>
+      <tr><td><span class="key">属</span>予作文以记之（岳阳楼记）</td><td><span class="c">“属”同“嘱”，嘱托</span></td></tr>
+      <tr><td>玉盘珍<span class="key">羞</span>（行路难）</td><td><span class="c">“羞”同“馐”，美味的食物</span></td></tr>
+      <tr><td><span class="key">直</span>万钱（行路难）</td><td><span class="c">“直”同“值”，价值</span></td></tr>
+    </table>
+
+    <h3>《岳阳楼记》</h3>
+    <div class="cards">
+      <div class="fc"><b>谪守</b><span class="c">贬官做州郡长官</span></div>
+      <div class="fc"><b>越明年</b><span class="c">到第二年</span></div>
+      <div class="fc"><b>增其旧制</b><span class="c">扩大原有规模</span></div>
+      <div class="fc"><b>胜状</b><span class="c">胜景</span></div>
+      <div class="fc"><b>横无际涯</b><span class="c">宽阔无边</span></div>
+      <div class="fc"><b>朝晖夕阴</b><span class="c">早晚阴晴明暗多变</span></div>
+      <div class="fc"><b>迁客骚人</b><span class="c">被贬官者与文人</span></div>
+      <div class="fc"><b>去国怀乡</b><span class="c">离开国都，怀念家乡</span></div>
+      <div class="fc"><b>景（春和景明）</b><span class="c">日光</span></div>
+      <div class="fc"><b>宠辱偕忘</b><span class="c">荣耀屈辱一并忘</span></div>
+      <div class="fc"><b>微斯人</b><span class="c">微：如果没有</span></div>
+      <div class="fc"><b>吾谁与归</b><span class="c">归：归依</span></div>
+    </div>
+    <div class="note"><b>翻译必考：“不以物喜，不以己悲”</b>
+      是<b style="display:inline">互文</b>，要合起来译：<span class="c">不因外物的好坏和自己的得失而或喜或悲。</span>
+    </div>
+    <p><b>行文思路：</b>叙事交代作记缘由 → 写洞庭湖“大观” → “若夫”（阴·悲）“至若”（晴·喜） → “嗟夫”转入议论，提出“古仁人之心” → “微斯人，吾谁与归”作结。</p>
+    <p><b>主旨：</b>以“古仁人”之境对比常人之情，表达超越个人得失、以天下为己任的政治抱负。</p>
+    <p><b>简答：为何用大量篇幅写洞庭湖？</b><span class="c">写景为抒情议论作铺垫；两种景色引出两种览物之情，再与“古仁人之心”对照，中心自然而出。</span></p>
+
+    <h3>《醉翁亭记》</h3>
+    <div class="cards">
+      <div class="fc"><b>蔚然</b><span class="c">茂盛的样子</span></div>
+      <div class="fc"><b>翼然</b><span class="c">像鸟张开翅膀一样（名词作状语）</span></div>
+      <div class="fc"><b>名之者谁</b><span class="c">名：命名（名词作动词）</span></div>
+      <div class="fc"><b>辄醉</b><span class="c">辄：就</span></div>
+      <div class="fc"><b>醉翁之意</b><span class="c">意：意趣、情趣</span></div>
+      <div class="fc"><b>得之心而寓之酒</b><span class="c">得：领会；寓：寄托</span></div>
+      <div class="fc"><b>林霏开 / 岩穴暝</b><span class="c">霏：雾气；开：消散；暝：昏暗</span></div>
+      <div class="fc"><b>野芳 / 佳木秀</b><span class="c">芳：花；秀：茂盛</span></div>
+      <div class="fc"><b>伛偻 / 提携</b><span class="c">弯腰曲背，指老人 / 被牵扶的孩子，指小孩</span></div>
+      <div class="fc"><b>射者中，弈者胜</b><span class="c">射：投壶；弈：下棋</span></div>
+      <div class="fc"><b>颓然</b><span class="c">倒下的样子，形容醉态</span></div>
+      <div class="fc"><b>太守谓谁</b><span class="c">谓：是</span></div>
+    </div>
+    <ul>
+      <li><b>线索</b>：“乐”——山水之乐 → 宴酣之乐 → 禽鸟之乐 → 太守之乐其乐。</li>
+      <li><b>写景顺序</b>：由远及近、由面及点：环滁皆山 → 西南诸峰 → 琅琊山 → 酿泉 → 醉翁亭。</li>
+      <li><b>语言</b>：连用 21 个“也”，语气<span class="key">舒缓咏叹</span>。</li>
+      <li><b>简答：写滁人游、众宾欢的用意？</b><span class="c">侧面写出滁州治理有方、百姓安乐，为“与民同乐”的主旨作铺垫。</span></li>
+    </ul>
+
+    <h3>《湖心亭看雪》</h3>
+    <div class="cards">
+      <div class="fc"><b>更定</b><span class="c">初更以后（更 gēng）</span></div>
+      <div class="fc"><b>拏一小舟</b><span class="c">撑船（读 ná）</span></div>
+      <div class="fc"><b>上下一白</b><span class="c">一：全</span></div>
+      <div class="fc"><b>惟长堤一痕</b><span class="c">惟：只</span></div>
+      <div class="fc"><b>芥</b><span class="c">小草，喻极微小</span></div>
+      <div class="fc"><b>焉得更有此人</b><span class="c">焉得：哪能；更：还</span></div>
+      <div class="fc"><b>强饮三大白</b><span class="c">强 qiǎng：尽力；白：罚酒用的酒杯，代指酒</span></div>
+      <div class="fc"><b>痴</b><span class="c">痴迷、执着</span></div>
+    </div>
+    <ul>
+      <li><b>“天与云与山与水，上下一白”好在哪？</b><span class="c">白描，三个“与”字写出水天一色的浑然，语言朴素而境界阔大。</span></li>
+      <li><b>量词</b>：一痕、一点、一芥、两三粒——量词精当，意境苍茫空阔。</li>
+      <li><b>文眼</b>：以“<span class="c">痴</span>”字作骨：痴行、痴景、痴情。</li>
+    </ul>
+
+    <div class="note"><b>文言翻译六字诀</b>
+      留（年号、人名、地名、官职照留）· 删（无实义语气助词删去）· 换（古词换今词）·
+      调（倒装调回现代语序）· 补（省略成分补出）· 贯（译不通处意译贯通）
+    </div>
+    <div class="done-row"><button class="done-btn" data-done="1">这一段我过完了 ✓</button></div>
+  </section>
+
+  <!-- ③ 诗词鉴赏 -->
+  <section class="sec" id="s3">
+    <div class="sec-h"><h2>③ 诗词鉴赏：手法与典故</h2><span class="tag">10 分钟</span></div>
+    <p class="why">鉴赏题常考“用了什么手法”“典故指什么”“表达什么情感”。记住每首诗的 1–2 个考点即可。</p>
+    <div class="tools"><button class="btn ghost" data-toggle="s3">全部显示 / 全部遮住</button></div>
+    <table>
+      <tr><th>诗句</th><th>考点</th></tr>
+      <tr><td>停杯投箸不能食，拔剑四顾心茫然（行路难）</td><td><span class="c">以乐景（盛宴）衬苦闷</span></td></tr>
+      <tr><td>欲渡黄河冰塞川，将登太行雪满山（行路难）</td><td><span class="c">象征（人生道路艰难）</span></td></tr>
+      <tr><td>闲来垂钓碧溪上，忽复乘舟梦日边（行路难）</td><td><span class="c">用典：吕尚垂钓遇文王；伊尹梦乘舟过日边受汤聘</span></td></tr>
+      <tr><td>怀旧空吟闻笛赋，到乡翻似烂柯人（酬乐天·颔联）</td><td><span class="c">两典：向秀经嵇康旧居闻笛作《思旧赋》；王质观棋，斧柄已烂，归家已过百年</span></td></tr>
+      <tr><td>沉舟侧畔千帆过，病树前头万木春（酬乐天·颈联）</td><td><span class="c">以<b>沉舟、病树</b>自喻（不是千帆、万木）；说明新事物必将取代旧事物</span></td></tr>
+      <tr><td>我欲乘风归去……何似在人间（水调歌头·上阕）</td><td><span class="c">由问月生出世之想，终以“何似在人间”作结，回到人间</span></td></tr>
+      <tr><td>人有悲欢离合……此事古难全（水调歌头·下阕）</td><td><span class="c">理性宽解</span></td></tr>
+      <tr><td>寄书长不达，况乃未休兵（月夜忆舍弟）</td><td><span class="c">背景安史之乱，由家愁落到战乱之痛</span></td></tr>
+      <tr><td>秋草独寻人去后（长沙过贾谊宅）</td><td><span class="c">借凭吊贾谊抒写自身迁谪之悲</span></td></tr>
+      <tr><td>一封朝奏九重天，夕贬潮州路八千（左迁）</td><td><span class="c">“朝奏”“夕贬”见获罪之速</span></td></tr>
+      <tr><td>鸡声茅店月，人迹板桥霜（商山早行）</td><td><span class="c">名词并置，不着一个动词，写尽早行辛苦、羁旅孤清</span></td></tr>
+    </table>
+    <p><b>《水调歌头》小序</b>：丙辰中秋，欢饮达旦，大醉，作此篇，兼怀<span class="c">子由</span>。（熙宁九年，1076 年）</p>
+    <div class="note"><b>鉴赏答题格式（照着写就能拿步骤分）</b>
+      赏析：手法 ＋ 结合诗句具体分析 ＋ 表达效果<br>
+      炼字：释字义 → 说手法 → 述效果<br>
+      情感主旨：由象到情，结合具体诗句与背景作答
+    </div>
+    <div class="done-row"><button class="done-btn" data-done="2">这一段我过完了 ✓</button></div>
+  </section>
+
+  <!-- ④ 议论文 -->
+  <section class="sec" id="s4">
+    <div class="sec-h"><h2>④ 议论文：四篇思路 + 论证方法</h2><span class="tag">10 分钟</span></div>
+    <p class="why">提纲原话：“第二单元四篇议论文重在理清思路、辨明论证方法。”</p>
+    <div class="tools"><button class="btn ghost" data-toggle="s4">全部显示 / 全部遮住</button></div>
+
+    <h3>先分清两个概念</h3>
+    <ul>
+      <li><b>立论</b>：正面阐明主张。<b>驳论</b>：通过批驳对方来树立自己观点。</li>
+      <li><b>论点</b>必须是<span class="key">完整的判断句</span>（“骨气”不是论点，“我们中国人是有骨气的”才是）。</li>
+      <li><b>论据</b>：事实论据、道理论据。</li>
+    </ul>
+    <table>
+      <tr><th>看到……</th><th>就是……论证</th></tr>
+      <tr><td>人名、史实、数据</td><td><span class="c">举例论证</span></td></tr>
+      <tr><td>名言、俗语</td><td><span class="c">道理论证（引用论证）</span></td></tr>
+      <tr><td>正反对照</td><td><span class="c">对比论证</span></td></tr>
+      <tr><td>以喻说理</td><td><span class="c">比喻论证</span></td></tr>
+    </table>
+
+    <h3>四篇一句话抓住</h3>
+    <p><b>《中国人失掉自信力了吗》（鲁迅·驳论文）</b></p>
+    <ol>
+      <li>摆出对方三条论据：自夸“地大物博”、只希望国联、求神拜佛</li>
+      <li>驳论证：信“地”信“物”信“国联”是“<span class="c">他信力</span>”，求神拜佛是“<span class="c">自欺力</span>”——论据与论点没有逻辑联系</li>
+      <li>立论：“我们有并不失掉自信力的中国人在”，他们是“中国的脊梁”</li>
+      <li>结论：“<span class="c">要自己去看地底下</span>”</li>
+    </ol>
+    <p><b>常考简答：“中国的脊梁”指什么？</b><span class="c">指脚踏实地为民族进步而奋斗的人；用“脊梁”作比喻，说明他们是支撑民族生存发展的中坚力量。</span></p>
+
+    <p><b>《谈骨气》（吴晗）</b>中心论点：“我们中国人是有骨气的。”孟子三句作道理论据，统领三个事例：</p>
+    <table>
+      <tr><th>孟子名句</th><th>事例</th></tr>
+      <tr><td>富贵不能淫</td><td><span class="c">文天祥拒绝元朝诱降</span></td></tr>
+      <tr><td>贫贱不能移</td><td><span class="c">穷人不食“嗟来之食”</span></td></tr>
+      <tr><td>威武不能屈</td><td><span class="c">闻一多怒斥特务</span></td></tr>
+    </table>
+    <div class="warn"><b>易错</b>三个事例的顺序<b style="display:inline">不能调换</b>，与孟子三句的先后一一照应。</div>
+
+    <p><b>《创造宣言》（陶行知）</b>先树靶子——五种“不能创造”的借口（环境太平凡、生活太单调、年纪太小、太无能、山穷水尽走投无路），再逐条反驳。核心主张：处处是创造之地，<span class="c">天天是创造之时</span>，人人是创造之人。</p>
+
+    <p><b>《培养德智体美劳……》（习近平·立论性政论文）</b>开篇点明“<span class="c">培养什么人，是教育的首要问题</span>”；再从六个方面讲“怎样培养”：坚定理想信念、厚植爱国主义情怀、加强品德修养、增长知识见识、培养奋斗精神、增强综合素质。多用排比形成气势。</p>
+
+    <div class="note"><b>论证思路题答题格式</b>文章首先……，接着……，然后……，最后……（按层次分点写）</div>
+
+    <h3>“君子自强不息”名言出处</h3>
+    <table>
+      <tr><td>天行健，君子以自强不息</td><td><span class="c">《周易》</span></td></tr>
+      <tr><td>路漫漫其修远兮，吾将上下而求索</td><td><span class="c">屈原</span></td></tr>
+      <tr><td>士不可以不弘毅，任重而道远</td><td><span class="c">《论语》</span></td></tr>
+      <tr><td>三军可夺帅也，匹夫不可夺志也</td><td><span class="c">《论语》</span></td></tr>
+      <tr><td>千磨万击还坚劲，任尔东西南北风</td><td><span class="c">郑燮</span></td></tr>
+    </table>
+    <div class="done-row"><button class="done-btn" data-done="3">这一段我过完了 ✓</button></div>
+  </section>
+
+  <!-- ⑤ 第一单元 + 易混 -->
+  <section class="sec" id="s5">
+    <div class="sec-h"><h2>⑤ 现代诗意象 + 易混常识 + 字音</h2><span class="tag">5 分钟</span></div>
+    <p class="why">提纲原话：“第一单元六首诗读懂意象、体会情感即可。”最后 5 分钟扫一遍容易张冠李戴的地方。</p>
+    <div class="tools"><button class="btn ghost" data-toggle="s5">全部显示 / 全部遮住</button></div>
+
+    <h3>意象对应（最容易安错）</h3>
+    <table>
+      <tr><th>《乡愁》</th><th>《我爱这土地》</th></tr>
+      <tr><td>邮票 → <span class="c">母子分离</span><br>船票 → <span class="c">夫妻分离</span><br>坟墓 → <span class="c">生死隔绝</span><br>海峡 → <span class="c">家国之隔</span></td>
+          <td>土地 → <span class="c">苦难深重的祖国</span><br>河流、风 → <span class="c">人民的悲愤与抗争</span><br>黎明 → <span class="c">胜利与新生的希望</span></td></tr>
+    </table>
+    <ul>
+      <li>《沁园春·雪》：上阕“<span class="c">望</span>”字统领写雪景，下阕“<span class="c">惜</span>”字统领评人物；“山舞银蛇，原驰蜡象”<span class="c">化静为动</span>。</li>
+      <li>朗诵基调：《乡愁》<span class="c">低回深沉</span>；《你是人间的四月天》<span class="c">明亮温柔、语气上扬</span>；《周总理，你在哪里》呼唤句<span class="c">轻、慢、含深情</span>，应答句<span class="c">稍扬稍亮</span>。</li>
+    </ul>
+
+    <h3>作者易混</h3>
+    <table>
+      <tr><td>艾青（《我爱这土地》）</td><td>原名 <span class="c">蒋海澄</span></td></tr>
+      <tr><td>穆旦（《我看》）</td><td>原名 <span class="c">查良铮</span>，“九叶诗派”</td></tr>
+      <tr><td>范仲淹（《岳阳楼记》）</td><td>字希文，谥 <span class="c">文正</span></td></tr>
+      <tr><td>欧阳修（《醉翁亭记》）</td><td>字永叔，号醉翁、六一居士，谥 <span class="c">文忠</span></td></tr>
+      <tr><td>张岱（《湖心亭看雪》）</td><td>选自 <span class="c">《陶庵梦忆》</span></td></tr>
+      <tr><td>鲁迅（《中国人失掉自信力了吗》）</td><td>收入 <span class="c">《且介亭杂文》</span></td></tr>
+    </table>
+
+    <h3>字音陷阱</h3>
+    <div class="cards">
+      <div class="fc"><b>强饮</b><span class="c">qiǎng</span></div>
+      <div class="fc"><b>拏</b><span class="c">ná</span></div>
+      <div class="fc"><b>更定</b><span class="c">gēng</span></div>
+      <div class="fc"><b>浩浩汤汤</b><span class="c">shāng</span></div>
+      <div class="fc"><b>省悟</b><span class="c">xǐng</span></div>
+      <div class="fc"><b>宿营</b><span class="c">sù</span></div>
+      <div class="fc"><b>积淀</b><span class="c">diàn</span></div>
+      <div class="fc"><b>舍弟 / 施舍</b><span class="c">shè / shě</span></div>
+      <div class="fc"><b>薄暮</b><span class="c">bó</span></div>
+      <div class="fc"><b>伛偻</b><span class="c">yǔ lǚ</span></div>
+      <div class="fc"><b>觥筹</b><span class="c">gōng chóu</span></div>
+      <div class="fc"><b>雾凇沆砀</b><span class="c">sōng hàng dàng</span></div>
+    </div>
+    <div class="done-row"><button class="done-btn" data-done="4">这一段我过完了 ✓</button></div>
+  </section>
+
+  <section class="sec" style="background:var(--gold-bg);border-color:#f0dfb5">
+    <h2 style="font-size:17px;margin:0 0 6px">考场提醒</h2>
+    <ul>
+      <li>默写写完回头核字形。</li>
+      <li>文言翻译字字落实。</li>
+      <li>简答题分点作答，每点先说结论再引依据。</li>
+      <li>作文留足时间；议论要言之有据，每个论据后跟一句分析。</li>
+    </ul>
+  </section>
+
+  <footer>
+    还有时间？在电脑上打开「26 题自测」做一遍，交卷后导出答题记录，回来说「批改」。<br>
+    内容全部来自《【语文】期中复习提纲》（统编版 2024，第一至三单元）
+  </footer>
+</div>
+
+<script>
+(function () {
+  // 点击遮挡块显示 / 隐藏
+  document.addEventListener("click", function (e) {
+    var c = e.target.closest(".c");
+    if (c) { c.classList.toggle("on"); return; }
+    var t = e.target.closest("[data-toggle]");
+    if (t) {
+      var cs = document.querySelectorAll("#" + t.dataset.toggle + " .c");
+      var allOn = Array.prototype.every.call(cs, function (x) { return x.classList.contains("on"); });
+      cs.forEach(function (x) { x.classList.toggle("on", !allOn); });
+    }
+  });
+
+  // 分段计时
+  var SEGS = [20, 15, 10, 10, 5];           // 分钟
+  var NAMES = ["① 默写必背 + 易错字", "② 三篇文言", "③ 诗词鉴赏", "④ 议论文", "⑤ 意象 + 易混 + 字音"];
+  var TOTAL = 60 * 60;
+  var KEY = "yuwen_1h_v1";
+  // 有的环境（微信内置浏览器、预览窗口）禁用本地存储，存不了就只在本次打开期间记住
+  var store = { get: function () { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
+                set: function (v) { try { localStorage.setItem(KEY, v); } catch (e) {} } };
+  var st = {};
+  try { st = JSON.parse(store.get() || "{}") || {}; } catch (e) { st = {}; }
+  st.done = st.done || [false, false, false, false, false];
+  st.elapsed = st.elapsed || 0;               // 已用秒数（暂停时保存）
+  var startedAt = null, timer = null, lastSeg = -1;
+
+  var $clock = document.getElementById("clock"), $now = document.getElementById("now"),
+      $bar = document.getElementById("progBar"), $start = document.getElementById("startBtn");
+  var planLinks = document.querySelectorAll("#plan a"), secs = [1,2,3,4,5].map(function (i) { return document.getElementById("s" + i); });
+
+  function save() { store.set(JSON.stringify(st)); }
+  function elapsed() { return st.elapsed + (startedAt ? (Date.now() - startedAt) / 1000 : 0); }
+  function segAt(sec) { var m = sec / 60, acc = 0; for (var i = 0; i < SEGS.length; i++) { acc += SEGS[i]; if (m < acc) return i; } return SEGS.length; }
+  function fmt(s) { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+
+  function render() {
+    var e = elapsed(), seg = segAt(e);
+    $clock.textContent = fmt(TOTAL - e);
+    var doneCount = st.done.filter(Boolean).length;
+    $bar.style.width = (doneCount / 5 * 100) + "%";
+    planLinks.forEach(function (a, i) { a.classList.toggle("cur", startedAt !== null && i === seg); a.classList.toggle("done", st.done[i]); });
+    secs.forEach(function (s, i) { s.classList.toggle("cur", startedAt !== null && i === seg); });
+    if (seg >= SEGS.length) {
+      $now.innerHTML = "<b>时间到！</b>完成 " + doneCount + "/5 段。还没过的段落挑红框“易错”看一眼。";
+    } else if (startedAt !== null || st.elapsed > 0) {
+      var acc = 0; for (var i = 0; i <= seg; i++) acc += SEGS[i];
+      $now.innerHTML = "现在：<b>" + NAMES[seg] + "</b><br>本段还剩 " + fmt(acc * 60 - e);
+    }
+    document.querySelectorAll("[data-done]").forEach(function (b) {
+      var i = +b.dataset.done; b.classList.toggle("ok", st.done[i]);
+      b.textContent = st.done[i] ? "已完成 ✓（点此撤销）" : (i === 0 ? "这一段我背完了 ✓" : "这一段我过完了 ✓");
+    });
+    if (startedAt !== null && seg !== lastSeg) {
+      if (lastSeg !== -1 && seg < SEGS.length) {
+        if (navigator.vibrate) navigator.vibrate(300);
+        secs[seg].scrollIntoView({ behavior: "smooth" });
+      }
+      if (seg >= SEGS.length) pause();
+      lastSeg = seg;
+    }
+  }
+  function start() {
+    if (elapsed() >= TOTAL) { st.elapsed = 0; st.done = [false, false, false, false, false]; save(); }
+    startedAt = Date.now(); lastSeg = segAt(elapsed());
+    timer = setInterval(render, 500); $start.textContent = "暂停"; render();
+    secs[Math.min(lastSeg, 4)].scrollIntoView({ behavior: "smooth" });
+  }
+  function pause() {
+    if (startedAt === null) return;
+    st.elapsed = elapsed(); startedAt = null; clearInterval(timer); save();
+    $start.textContent = st.elapsed >= TOTAL ? "开始" : "继续"; render();
+  }
+  $start.onclick = function () { startedAt === null ? start() : pause(); };
+  document.getElementById("resetBtn").onclick = function () {
+    if (!confirm("清空计时和完成记录，重新开始？")) return;
+    pause(); st = { done: [false, false, false, false, false], elapsed: 0 }; save();
+    $start.textContent = "开始"; $now.textContent = "按「开始」计时，每段到点会提醒你换下一段"; lastSeg = -1; render();
+  };
+  document.querySelectorAll("[data-done]").forEach(function (b) {
+    b.onclick = function () { var i = +b.dataset.done; st.done[i] = !st.done[i]; save(); render(); };
+  });
+  window.addEventListener("pagehide", function () { if (startedAt !== null) { st.elapsed = elapsed(); save(); } });
+  if (st.elapsed > 0) $start.textContent = st.elapsed >= TOTAL ? "开始" : "继续";
+  render();
+})();
+</script>
+</body>
+</html>
